@@ -2,8 +2,17 @@ import type {
   IocType,
   ThreatIntelProvider,
 } from "../constants/provider.interface";
+import { OTXProvider } from "../constants/otx.provider";
+import { AbuseIPDBProvider } from "../constants/abuseipdb.provider";
+import { VirusTotalProvider } from "../constants/virustotal.provider";
 
 const DEFAULT_TIMEOUT_MS = 4000;
+
+export const ALL_PROVIDERS: ReadonlyArray<ThreatIntelProvider> = [
+  new OTXProvider(),
+  new AbuseIPDBProvider(),
+  new VirusTotalProvider(),
+];
 
 export type ProviderExecutionStatus = "success" | "timeout" | "error";
 
@@ -15,7 +24,7 @@ export interface ProviderExecutionResult<T = unknown> {
 }
 
 export interface ProviderExecutorOptions<TOptions = Record<string, unknown>> {
-//timeout window
+  //timeout window
   timeoutMs?: number;
   providerOptions?: TOptions;
 }
@@ -45,28 +54,28 @@ function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
 
 export async function executeProviders<
   TResponse = unknown,
-  TOptions = Record<string, unknown>
+  TOptions = Record<string, unknown>,
 >(
   providers: ReadonlyArray<ThreatIntelProvider<TResponse, TOptions>>,
   ioc: string,
   type: IocType,
-  options: ProviderExecutorOptions<TOptions> = {}
+  options: ProviderExecutorOptions<TOptions> = {},
 ): Promise<ProviderExecutionResult<TResponse>[]> {
   const timeoutMs = options.timeoutMs ?? DEFAULT_TIMEOUT_MS;
   const eligibleProviders = providers.filter((provider) =>
-    provider.supportedIocTypes.includes(type)
+    provider.supportedIocTypes.includes(type),
   );
 
   const executions = eligibleProviders.map((provider) => ({
     provider,
     execution: withTimeout(
       provider.query(ioc, type, options.providerOptions),
-      timeoutMs
+      timeoutMs,
     ),
   }));
 
   const settled = await Promise.allSettled(
-    executions.map(({ execution }) => execution)
+    executions.map(({ execution }) => execution),
   );
 
   return settled.map((result, index) => {

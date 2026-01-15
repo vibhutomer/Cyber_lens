@@ -1,8 +1,7 @@
-import express from 'express';
-import cors from 'cors';
-import resolveOwner from './utils/resolveOwner';
-import routes from './routes';
-
+import express from "express";
+import cors from "cors";
+import resolveOwner from "./utils/resolveOwner";
+import lookupRouter from "./routes/lookup";
 
 const app = express();
 
@@ -11,11 +10,9 @@ app.use(express.json());
 app.use(cors());
 app.use(resolveOwner);
 
-
 // Simple health route
-app.get('/', (_req, res) => res.json({ status: 'ok' }));
+app.get("/", (_req, res) => res.json({ status: "ok" }));
 
-// Routes
-app.use('/', routes);
+app.use("/lookup", lookupRouter);
 
 export default app;

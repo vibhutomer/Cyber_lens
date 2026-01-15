@@ -2,7 +2,8 @@ import { NextFunction, Request, Response } from "express";
 import pool from "../db";
 import { OwnerContext } from "../constants/owner";
 
-const UUID_V4_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const UUID_V4_REGEX =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 async function ensureAnonymousClient(clientId: string): Promise<void> {
   await pool.query(
@@ -12,14 +13,14 @@ async function ensureAnonymousClient(clientId: string): Promise<void> {
     ON CONFLICT (id)
     DO UPDATE SET last_seen = NOW()
     `,
-    [clientId]
+    [clientId],
   );
 }
 
-export async function resolveOwner(
+async function resolveOwner(
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> {
   // Allow CORS preflight without requiring identity
   if (req.method === "OPTIONS") {
